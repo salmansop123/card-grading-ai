@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: card-market-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+
+  - type: worker
+    name: card-market-celery
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.celery_app worker --loglevel=info
+
+  - type: cron
+    name: card-market-beat
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.celery_app beat --loglevel=info
+    schedule: "0 * * * *"
